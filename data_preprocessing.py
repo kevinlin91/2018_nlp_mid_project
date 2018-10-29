@@ -53,20 +53,29 @@ def feature_transformation_all(preprocessing_data, method = 'tfidf'):
         X = X.toarray()
     return X, labels
 
-def feature_transformation_topic(preprocessing_data, topic = 100):
+def feature_transformation_topic(preprocessing_data, method = 'lda', topic = 100):
     sentences = [x[0] for x in preprocessing_data]
     sentences = [x.split(',') for x in sentences]
     labels = [x[1] for x in preprocessing_data]
     dictionary = corpora.Dictionary(sentences)
     corpus = [dictionary.doc2bow(text) for text in sentences]
-    tfidf = models.TfidfModel(corpus)
-    corpus_tfidf = tfidf[corpus]
-    lsi = models.LsiModel(corpus_tfidf, id2word = dictionary, num_topics=topic)
-    corpus_lsi = lsi[corpus_tfidf]
-    features = list()
-    for doc in corpus_lsi:
-        features.append( [x[1] for x in doc] )
-    return features, labels
+    if method == 'lsa':
+        tfidf = models.TfidfModel(corpus)
+        corpus_tfidf = tfidf[corpus]
+        lsi = models.LsiModel(corpus_tfidf, id2word = dictionary, num_topics=topic)
+        corpus_lsi = lsi[corpus_tfidf]
+        features = list()
+        for doc in corpus_lsi:
+            features.append( [x[1] for x in doc] )
+        return features, labels
+    elif method == 'lda':
+        lda = models.ldamodel.LdaModel(corpus, num_topics = topic)
+        lda_features = [lda.get_document_topics(cor, minimum_probability=0.0) for cor in corpus]
+        features = list()
+        for lda_feature in lda_features:
+            feature = [x[1] for x in lda_feature]
+            features.append(feature)
+        return features, labels
 #LSI mapping
 #new_doc = "Human computer interaction"
 #vec_bow = dictionary.doc2bow(doc.lower().split())
@@ -95,7 +104,7 @@ def preprocessing_sep(data):
     sadness_uttre = list()
     anger_uttre = list()
     neutral_uttre = list()
-    for dialog in data
+    #for dialog in data
 
 
     
@@ -109,7 +118,7 @@ if __name__ == '__main__':
     #path = './EmotionPush/emotionpush_train.json'
     preprocessing_data = preprocessing_all(loading_data(path))
     #feature_transformation_all(preprocessing_data)
-    #feature_transformation_topic(preprocessing_data)
+    #feature_transformation_topic(preprocessing_data, method = 'lda')
     #pipeline_test(preprocessing_data)
 
 
