@@ -6,7 +6,7 @@ from keras.models import Sequential
 from keras.layers import Dense, Embedding, LSTM, SpatialDropout1D
 from sklearn.model_selection import train_test_split
 import numpy as np
-import warnings
+import warnings
 warnings.filterwarnings("ignore")
 
 #friend max word length: 59
