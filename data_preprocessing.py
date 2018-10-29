@@ -7,6 +7,7 @@ from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer, T
 from sklearn.svm import SVC
 from sklearn.pipeline import Pipeline
 from sklearn.model_selection import GridSearchCV
+from gensim import corpora, models
 import numpy as np
 import json
 
@@ -52,6 +53,24 @@ def feature_transformation_all(preprocessing_data, method = 'tfidf'):
         X = X.toarray()
     return X, labels
 
+def feature_transformation_topic(preprocessing_data, topic = 100):
+    sentences = [x[0] for x in preprocessing_data]
+    sentences = [x.split(',') for x in sentences]
+    labels = [x[1] for x in preprocessing_data]
+    dictionary = corpora.Dictionary(sentences)
+    corpus = [dictionary.doc2bow(text) for text in sentences]
+    tfidf = models.TfidfModel(corpus)
+    corpus_tfidf = tfidf[corpus]
+    lsi = models.LsiModel(corpus_tfidf, id2word = dictionary, num_topics=topic)
+    corpus_lsi = lsi[corpus_tfidf]
+    features = list()
+    for doc in corpus_lsi:
+        features.append( [x[1] for x in doc] )
+    return features, labels
+#LSI mapping
+#new_doc = "Human computer interaction"
+#vec_bow = dictionary.doc2bow(doc.lower().split())
+#vec_lsi = lsi[vec_bow] 
 
 def pipeline_test(preprocessing_data):
     sentences = [x[0] for x in preprocessing_data]
@@ -71,6 +90,15 @@ def pipeline_test(preprocessing_data):
     
 
 def preprocessing_sep(data):
+    target_labels = ['joy', 'sadness', 'anger', 'neutral']
+    joy_uttre = list()
+    sadness_uttre = list()
+    anger_uttre = list()
+    neutral_uttre = list()
+    for dialog in data
+
+
+    
     pass
 
 def feature_transformation_sep(preprocessing_data):
@@ -80,7 +108,8 @@ if __name__ == '__main__':
     path = './Friends/friends_train.json'
     #path = './EmotionPush/emotionpush_train.json'
     preprocessing_data = preprocessing_all(loading_data(path))
-    feature_transformation_all(preprocessing_data)
+    #feature_transformation_all(preprocessing_data)
+    #feature_transformation_topic(preprocessing_data)
     #pipeline_test(preprocessing_data)
 
 
