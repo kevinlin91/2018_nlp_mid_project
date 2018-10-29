@@ -5,16 +5,16 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.model_selection import cross_val_score
 from sklearn.model_selection import GridSearchCV
 from collections import Counter
-
+import time
 
 class setiment_analysis():
     def __init__(self, path, _type):
         self.path = path
         self.data_type = _type
         self.training, self.label, self.label_mapping = self.get_data()
-        
 
-    def get_data(self):        
+
+    def get_data(self):
         if self.data_type == 'all':
             preprocessing_data = preprocessing_all(loading_data(self.path))
             training, label = feature_transformation_all(preprocessing_data)
@@ -48,7 +48,7 @@ class setiment_analysis():
         print("Best parameters set found on development set:")
         print()
         print(clf.best_params_)
-  
+
     def adaboost(self):
         #clf = AdaBoostClassifier()
         tuned_parameters = [ {'n_estimators': [10, 20, 30, 40, 50, 60, 70, 80, 90], 'learning_rate': [0.001, 0.005, 0.01, 0.05, 0.1, 0.5]} ]
@@ -57,7 +57,7 @@ class setiment_analysis():
         print("Best parameters set found on development set:")
         print()
         print(clf.best_params_)
-        
+
     def gbdt(self):
         clf = GradientBoostingClassifier()
         #tuned_parameters = [ {'n_estimators': [10, 20, 30, 40, 50, 60, 70, 80, 90], 'learning_rate': [0.001, 0.005, 0.01, 0.05, 0.1, 0.5]} ]
@@ -68,11 +68,13 @@ class setiment_analysis():
         #print(clf.best_params_)
 
 def main():
+    start_time = time.time()
     model = setiment_analysis('./Friends/friends_train.json', 'all')
-    #model.svm()
+    model.svm()
     #model.rf()
     #model.adaboost()
-    model.gbdt()
+    #model.gbdt()
+    print (time.time() - start_time)
 
 
 if __name__ == '__main__':

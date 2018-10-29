@@ -17,8 +17,8 @@ class rnn():
         self.path = path
         self.data_type = _type
         self.training, self.label, self.label_mapping = self.get_data()
-        
-    def get_data(self):        
+
+    def get_data(self):
         if self.data_type == 'all':
             preprocessing_data = preprocessing_all(loading_data(self.path))
             training = [x[0] for x in preprocessing_data]
@@ -38,7 +38,7 @@ class rnn():
         tokenizer.fit_on_texts(self.training)
         X = tokenizer.texts_to_sequences(self.training)
         X = pad_sequences(X)
-        
+
         embed_dim = 32
         lstm_out = 64
 
@@ -51,8 +51,9 @@ class rnn():
 
         X_train, X_test, Y_train, Y_test = train_test_split(X,np.array(self.label), test_size = 0.33, random_state = 42)
         batch_size = 32
-        model.fit(X_train, Y_train, epochs = 10, batch_size=batch_size, verbose = 2)
+        model.fit(X_train, Y_train, epochs = 100, batch_size=batch_size, verbose = 2)
         score,acc = model.evaluate(X_test, Y_test, verbose = 2, batch_size = batch_size)
+        model.save('rnn_model.h5')
 def main():
     model = rnn('./Friends/friends_train.json', 'all')
     model.get_features()
