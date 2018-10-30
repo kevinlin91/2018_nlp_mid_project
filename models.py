@@ -8,16 +8,25 @@ from collections import Counter
 import time
 
 class setiment_analysis():
-    def __init__(self, path, _type):
+    def __init__(self, path, _type, method, topic = 0):
         self.path = path
         self.data_type = _type
+        self.method = method
+        self.topic = topic
         self.training, self.label, self.label_mapping = self.get_data()
-
+        
 
     def get_data(self):
         if self.data_type == 'all':
             preprocessing_data = preprocessing_all(loading_data(self.path))
             training, label = feature_transformation_all(preprocessing_data)
+            le = LabelEncoder()
+            label = le.fit_transform(label)
+            label_mapping = le.classes_
+            return training, label, label_mapping
+        elif self.data_type == 'all_topic':
+            preprocessing_data = preprocessing_all(loading_data(self.path))
+            training, label = feature_transformation_topic(preprocessing_data, method = self.method, topic = self.topic)
             le = LabelEncoder()
             label = le.fit_transform(label)
             label_mapping = le.classes_
@@ -69,12 +78,13 @@ class setiment_analysis():
 
 def main():
     start_time = time.time()
-    model = setiment_analysis('./Friends/friends_train.json', 'all')
-    #print ('svm')
-    #model.svm()
-    #model.rf()
-    #print ('adaboost')
-    #model.adaboost()
+    model = setiment_analysis('./Friends/friends_train.json', 'all_topic', 'lda', 4)
+    print ('svm')
+    model.svm()
+    print ('random forest')
+    model.rf()
+    print ('adaboost')
+    model.adaboost()
     print ('gbdt')
     model.gbdt()
     print (time.time() - start_time)

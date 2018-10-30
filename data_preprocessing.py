@@ -148,7 +148,7 @@ def feature_transformation_topic(preprocessing_data, method = 'lsa', topic = 100
         tfidf = models.TfidfModel(corpus)
         corpus_tfidf = tfidf[corpus]
         lsi = models.LsiModel(corpus_tfidf, id2word = dictionary, num_topics=topic)
-        lsi.save('/data/lsi_all.pkl')
+        lsi.save('./data/lsi_all.pkl')
         corpus_lsi = lsi[corpus_tfidf]
         features = list()
         for doc in corpus_lsi:
