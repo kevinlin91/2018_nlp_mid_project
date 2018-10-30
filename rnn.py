@@ -59,6 +59,8 @@ class rnn():
         model = Sequential()
         model.add(Embedding(60, embed_dim,input_length = self.length))
         model.add(SpatialDropout1D(0.2))
+        model.add(LSTM(48, dropout=0.2, recurrent_dropout=0.2))
+        model.add(SpatialDropout1D(0.2))
         model.add(LSTM(lstm_out, dropout=0.2, recurrent_dropout=0.2))
         model.add(Dense(4,activation='softmax'))
         model.compile(loss = 'categorical_crossentropy', optimizer='adam',metrics = ['accuracy'])
