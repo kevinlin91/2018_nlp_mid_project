@@ -8,6 +8,7 @@ from collections import Counter
 import time
 import warnings
 warnings.filterwarnings(action='ignore', category=UserWarning, module='gensim')
+warnings.filterwarnings('ignore')
 from gensim import corpora, models
 import os
 from tqdm import tqdm
@@ -239,7 +240,8 @@ class setiment_analysis_sep():
         valid_score_anger = clf_anger.score(self.valid_anger, self.valid_anger_label)
         valid_score_neutral = clf_neutral.score(self.valid_neutral, self.valid_neutral_label)
         
-        print ('SVM %s %s' % (self.data_type, self.method))
+        print ('SVM %s %s topic %s' % (self.data_type, self.method, self.topic))
+        print ('start, joy, sadness, anger, neutral')
         print ('testing accuracy: ', test_score_start, test_score_joy, test_score_sadness, test_score_anger, test_score_neutral)
         print ('validing accuracy: ', valid_score_start, valid_score_joy, valid_score_sadness, valid_score_anger, valid_score_neutral)
         
@@ -290,60 +292,126 @@ class setiment_analysis_sep():
         valid_score_neutral = clf_neutral.score(self.valid_neutral, self.valid_neutral_label)
         
         print ('Random Forest %s %s' % (self.data_type, self.method))
+        print ('start, joy, sadness, anger, neutral')
         print ('testing accuracy: ', test_score_start, test_score_joy, test_score_sadness, test_score_anger, test_score_neutral)
         print ('validing accuracy: ', valid_score_start, valid_score_joy, valid_score_sadness, valid_score_anger, valid_score_neutral)
     
     def adaboost(self):
-        if self.data_type == 'all':
-            clf = AdaBoostClassifier(learning_rate = 0.001, n_estimators = 10)
-        elif self.data_type == 'all_topic':
+        if self.data_type == 'sep':
+            clf_start = AdaBoostClassifier(learning_rate = 0.001, n_estimators = 10)
+            clf_joy = AdaBoostClassifier(learning_rate = 0.001, n_estimators = 10)
+            clf_sadness = AdaBoostClassifier(learning_rate = 0.001, n_estimators = 10)
+            clf_anger = AdaBoostClassifier(learning_rate = 0.001, n_estimators = 10)
+            clf_neutral = AdaBoostClassifier(learning_rate = 0.001, n_estimators = 10)
+        elif self.data_type == 'sep_topic':
             if self.method == 'lsa':
-                clf = AdaBoostClassifier(learning_rate = 0.5, n_estimators = 80)
-            elif self.method == 'lda':
-                clf = AdaBoostClassifier(learning_rate = 0.5, n_estimators = 70)
-        elif self.data_type == 'all_word2vec':
-            clf = AdaBoostClassifier()
+                clf_start = AdaBoostClassifier(learning_rate = 0.5, n_estimators = 80)
+                clf_joy = AdaBoostClassifier(learning_rate = 0.5, n_estimators = 80)
+                clf_sadness = AdaBoostClassifier(learning_rate = 0.5, n_estimators = 80)
+                clf_anger = AdaBoostClassifier(learning_rate = 0.5, n_estimators = 80)
+                clf_neutral = AdaBoostClassifier(learning_rate = 0.5, n_estimators = 80)
+            elif self.method == 'sep':
+                clf_start = AdaBoostClassifier(learning_rate = 0.5, n_estimators = 70)
+                clf_joy = AdaBoostClassifier(learning_rate = 0.5, n_estimators = 70)
+                clf_sadness = AdaBoostClassifier(learning_rate = 0.5, n_estimators = 70)
+                clf_anger = AdaBoostClassifier(learning_rate = 0.5, n_estimators = 70)
+                clf_neutral = AdaBoostClassifier(learning_rate = 0.5, n_estimators = 70)
+        elif self.data_type == 'sep_word2vec':
+            clf_start = AdaBoostClassifier(learning_rate = 0.5, n_estimators = 70)
+            clf_joy = AdaBoostClassifier(learning_rate = 0.5, n_estimators = 70)
+            clf_sadness = AdaBoostClassifier(learning_rate = 0.5, n_estimators = 70)
+            clf_anger = AdaBoostClassifier(learning_rate = 0.5, n_estimators = 70)
+            clf_neutral = AdaBoostClassifier(learning_rate = 0.5, n_estimators = 70)
             
-        clf.fit(self.training, self.label)
-        test_score = clf.score(self.testing, self.test_label)
-        valid_score = clf.score(self.valid, self.valid_label)
+        clf_start.fit(self.train_start, self.train_start_label)
+        clf_joy.fit(self.train_joy, self.train_joy_label)
+        clf_sadness.fit(self.train_sadness, self.train_sadness_label)
+        clf_anger.fit(self.train_anger, self.train_anger_label)
+        clf_neutral.fit(self.train_neutral, self.train_neutral_label)
+
+        test_score_start = clf_start.score(self.test_start, self.test_start_label)
+        test_score_joy = clf_joy.score(self.test_joy, self.test_joy_label)
+        test_score_sadness = clf_sadness.score(self.test_sadness, self.test_sadness_label)
+        test_score_anger = clf_anger.score(self.test_anger, self.test_anger_label)
+        test_score_neutral = clf_neutral.score(self.test_neutral, self.test_neutral_label)
+        
+        valid_score_start = clf_start.score(self.valid_start, self.valid_start_label)
+        valid_score_joy = clf_joy.score(self.valid_joy, self.valid_joy_label)
+        valid_score_sadness = clf_sadness.score(self.valid_sadness, self.valid_sadness_label)
+        valid_score_anger = clf_anger.score(self.valid_anger, self.valid_anger_label)
+        valid_score_neutral = clf_neutral.score(self.valid_neutral, self.valid_neutral_label)
+        
         print ('Adaboost %s %s' % (self.data_type, self.method))
-        print ('testing accuracy: ', test_score)
-        print ('valid accuracy: ', valid_score)
+        print ('start, joy, sadness, anger, neutral')
+        print ('testing accuracy: ', test_score_start, test_score_joy, test_score_sadness, test_score_anger, test_score_neutral)
+        print ('validing accuracy: ', valid_score_start, valid_score_joy, valid_score_sadness, valid_score_anger, valid_score_neutral)
 
     def gbdt(self):
         #clf = GradientBoostingClassifier()
-        if self.data_type == 'all':
-            clf = GradientBoostingClassifier(learning_rate = 0.1, n_estimators = 60)
-        elif self.data_type == 'all_topic':
+        if self.data_type == 'sep':
+            clf_start = GradientBoostingClassifier(learning_rate = 0.1, n_estimators = 60)
+            clf_joy = GradientBoostingClassifier(learning_rate = 0.1, n_estimators = 60)
+            clf_sadness = GradientBoostingClassifier(learning_rate = 0.1, n_estimators = 60)
+            clf_anger = GradientBoostingClassifier(learning_rate = 0.1, n_estimators = 60)
+            clf_neutral = GradientBoostingClassifier(learning_rate = 0.1, n_estimators = 60)
+        elif self.data_type == 'sep_topic':
             if self.method == 'lsa':
-                clf = GradientBoostingClassifier(learning_rate = 0.05, n_estimators = 90)
+                clf_start = GradientBoostingClassifier(learning_rate = 0.05, n_estimators = 90)
+                clf_joy = GradientBoostingClassifier(learning_rate = 0.05, n_estimators = 90)
+                clf_sadness = GradientBoostingClassifier(learning_rate = 0.05, n_estimators = 90)
+                clf_anger = GradientBoostingClassifier(learning_rate = 0.05, n_estimators = 90)
+                clf_neutral = GradientBoostingClassifier(learning_rate = 0.05, n_estimators = 90)
             elif self.method == 'lda':
-                clf = GradientBoostingClassifier(learning_rate = 0.05, n_estimators = 80)
-        elif self.data_type == 'all_word2vec':
-            clf = GradientBoostingClassifier()
+                clf_start = GradientBoostingClassifier(learning_rate = 0.05, n_estimators = 80)
+                clf_joy = GradientBoostingClassifier(learning_rate = 0.05, n_estimators = 80)
+                clf_sadness = GradientBoostingClassifier(learning_rate = 0.05, n_estimators = 80)
+                clf_anger = GradientBoostingClassifier(learning_rate = 0.05, n_estimators = 80)
+                clf_neutral = GradientBoostingClassifier(learning_rate = 0.05, n_estimators = 80)
+        elif self.data_type == 'sep_word2vec':
+            clf_start = GradientBoostingClassifier(learning_rate = 0.05, n_estimators = 80)
+            clf_joy = GradientBoostingClassifier(learning_rate = 0.05, n_estimators = 80)
+            clf_sadness = GradientBoostingClassifier(learning_rate = 0.05, n_estimators = 80)
+            clf_anger = GradientBoostingClassifier(learning_rate = 0.05, n_estimators = 80)
+            clf_neutral = GradientBoostingClassifier(learning_rate = 0.05, n_estimators = 80)
             
-        clf.fit(self.training, self.label)
-        test_score = clf.score(self.testing, self.test_label)
-        valid_score = clf.score(self.valid, self.valid_label)
+        clf_start.fit(self.train_start, self.train_start_label)
+        clf_joy.fit(self.train_joy, self.train_joy_label)
+        clf_sadness.fit(self.train_sadness, self.train_sadness_label)
+        clf_anger.fit(self.train_anger, self.train_anger_label)
+        clf_neutral.fit(self.train_neutral, self.train_neutral_label)
+
+        test_score_start = clf_start.score(self.test_start, self.test_start_label)
+        test_score_joy = clf_joy.score(self.test_joy, self.test_joy_label)
+        test_score_sadness = clf_sadness.score(self.test_sadness, self.test_sadness_label)
+        test_score_anger = clf_anger.score(self.test_anger, self.test_anger_label)
+        test_score_neutral = clf_neutral.score(self.test_neutral, self.test_neutral_label)
+        
+        valid_score_start = clf_start.score(self.valid_start, self.valid_start_label)
+        valid_score_joy = clf_joy.score(self.valid_joy, self.valid_joy_label)
+        valid_score_sadness = clf_sadness.score(self.valid_sadness, self.valid_sadness_label)
+        valid_score_anger = clf_anger.score(self.valid_anger, self.valid_anger_label)
+        valid_score_neutral = clf_neutral.score(self.valid_neutral, self.valid_neutral_label)
         print ('GBDT %s %s' % (self.data_type, self.method))
-        print ('testing accuracy: ', test_score)
-        print ('valid accuracy: ', valid_score)
+        print ('testing accuracy: ', test_score_start, test_score_joy, test_score_sadness, test_score_anger, test_score_neutral)
+        print ('validing accuracy: ', valid_score_start, valid_score_joy, valid_score_sadness, valid_score_anger, valid_score_neutral)
 
 def main():
-    start_time = time.time()
-    model = setiment_analysis_sep(train = './Friends/friends_train.json', valid = './Friends/friends_dev.json', test = './Friends/friends_test.json',
-                              _type = 'sep_topic',method = 'lda', topic = 10)
-    #print (model.train_joy[0], model.test_joy_label[0])
-    #print (model.test_joy[0], model.test_joy_label[0])
-    #print (len(model.train_joy), len(model.train_joy_label), len(model.test_joy), len(model.test_joy_label), len(model.valid_joy), len(model.valid_joy_label), len(model.train_start), len(model.train_start_label))
-    #print ( len(model.train_start), len(model.train_start_label), len(model.test_start), len(model.test_start_label), len(model.valid_start), len(model.valid_start_label) )
-                    
-    #model.svm()
-    model.rf()
-    #model.adaboost()
-    #model.gbdt()
-    #print (time.time() - start_time)
+    topics = [50, 100, 150, 200]
+    topics = [4,5,6,7,8,9,10]
+    for x in topics:
+        start_time = time.time()
+        model = setiment_analysis_sep(train = './Friends/friends_train.json', valid = './Friends/friends_dev.json', test = './Friends/friends_test.json',_type = 'sep_word2vec',method = 'lda', topic = x)
+        #model = setiment_analysis_sep(train = './EmotionPush/emotionpush_train.json', valid = './EmotionPush/emotionpush_dev.json', test = './EmotionPush/emotionpush_test.json', _type = 'all_topic',method = 'lda', topic = x)
+        #print (model.train_joy[0], model.test_joy_label[0])
+        #print (model.test_joy[0], model.test_joy_label[0])
+        #print (len(model.train_joy), len(model.train_joy_label), len(model.test_joy), len(model.test_joy_label), len(model.valid_joy), len(model.valid_joy_label), len(model.train_start), len(model.train_start_label))
+        #print ( len(model.train_start), len(model.train_start_label), len(model.test_start), len(model.test_start_label), len(model.valid_start), len(model.valid_start_label) )
+                        
+        model.svm()
+        model.rf()
+        model.adaboost()
+        model.gbdt()
+        print (time.time() - start_time)
 
 if __name__ == '__main__':
     main()
