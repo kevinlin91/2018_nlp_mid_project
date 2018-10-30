@@ -11,6 +11,7 @@ import warnings
 warnings.filterwarnings(action='ignore', category=UserWarning, module='gensim')
 from gensim import corpora, models
 import numpy as np
+np.seterr(divide='ignore', invalid='ignore')
 import json
 import pickle
 
@@ -226,7 +227,37 @@ def feature_transformation_sep_topic(preprocessing_data, method = 'lsa', topic =
             topic_features[emotion+'_label'] = labels
             topic_features[emotion+'_start'] = features_start
             topic_features[emotion+'_label'] = labels_start
+
+def feature_transformation_word2vec(preprocessing_data, dim=100):
+    sentences = [x[0] for x in preprocessing_data]
+    
+    word2vec_sentences = [x.split(' ') for x in sentences]
+    labels = [x[1] for x in preprocessing_data]
+    word2vec = models.word2vec.Word2Vec(word2vec_sentences, size=dim, min_count=1)
+    vectorizer = TfidfVectorizer()
+    matrix = vectorizer.fit_transform(sentences)
+    tfidf = dict(zip(vectorizer.get_feature_names(), vectorizer.idf_))
+    features = list()
+    for sentence in word2vec_sentences:
+        count = 0
+        a = np.array([ 0 for x in range(dim)])
+        for word in sentence:
+            try:
+                word_vec = np.array(word2vec[word])
+                tfidf_value = tfidf[word]
+                count += 1
+                a = a + (word_vec * tfidf_value)
+            except:
+                pass
+        features.append(a/count)
+    features = np.nan_to_num(features).tolist()
+    return features, labels
             
+        
+    
+
+
+    
 def pipeline_test(preprocessing_data):
     sentences = [x[0] for x in preprocessing_data]
     labels = [x[1] for x in preprocessing_data]
@@ -246,11 +277,12 @@ def pipeline_test(preprocessing_data):
 if __name__ == '__main__':
     path = './Friends/friends_train.json'
     #path = './EmotionPush/emotionpush_train.json'
-    #preprocessing_data = preprocessing_all(loading_data(path))
-    preprocessing_data = preprocessing_sep(loading_data(path))
+    preprocessing_data = preprocessing_all(loading_data(path))
+    #preprocessing_data = preprocessing_sep(loading_data(path))
     #feature_transformation_all(preprocessing_data)
     #feature_transformation_topic(preprocessing_data, method = 'lda')
-    feature_transformation_sep(preprocessing_data)
+    #feature_transformation_sep(preprocessing_data)
+    feature_transformation_word2vec(preprocessing_data)
     #feature_transformation_sep_topic(preprocessing_data, method = 'lsa', topic = 10)
     #pipeline_test(preprocessing_data)
 
