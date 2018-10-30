@@ -69,7 +69,11 @@ class rnn():
         batch_size = 32
         model.fit(X_train, Y_train, epochs = 5, batch_size=batch_size, verbose = 2)
         score_test, acc_test = model.evaluate(self.testing, self.test_label, verbose = 2, batch_size = batch_size)
-        score_valid, acc_valid = model.evalute(self.valid, self.valid_label, verbos = 2, batch_size = batch_size)
+        score_valid, acc_valid = model.evaluate(self.valid, self.valid_label, verbos = 2, batch_size = batch_size)
+        print ("test")
+        print (score_test, acc_test)
+        print ("valid")
+        print (score_valid, acc_valid)
         
         model.save('rnn_model.h5')
         
