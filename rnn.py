@@ -29,9 +29,9 @@ class rnn():
         label = [x[1] for x in preprocessing_data]
         ohe = OneHotEncoder()
         label = ohe.fit_transform(np.array(label).reshape(-1, 1)).toarray()        
-        tokenizer = Tokenizer(num_words=max_features, split=' ')
-        tokenizer.fit_on_texts(self.training)
-        X = tokenizer.texts_to_sequences(self.training)
+        tokenizer = Tokenizer(num_words=self.max_features, split=' ')
+        tokenizer.fit_on_texts(training)
+        X = tokenizer.texts_to_sequences(training)
         X = pad_sequences(X)
         
         return X, label, ohe, tokenizer, len(X[0])
@@ -57,7 +57,7 @@ class rnn():
         lstm_out = 64
 
         model = Sequential()
-        model.add(Embedding(60, embed_dim,input_length = X.shape[1]))
+        model.add(Embedding(60, embed_dim,input_length = self.length))
         model.add(SpatialDropout1D(0.2))
         model.add(LSTM(lstm_out, dropout=0.2, recurrent_dropout=0.2))
         model.add(Dense(4,activation='softmax'))
@@ -67,14 +67,14 @@ class rnn():
         Y_train = self.label
         
         batch_size = 32
-        model.fit(X_train, Y_train, epochs = 100, batch_size=batch_size, verbose = 2)
+        model.fit(X_train, Y_train, epochs = 5, batch_size=batch_size, verbose = 2)
         score_test, acc_test = model.evaluate(self.testing, self.test_label, verbose = 2, batch_size = batch_size)
         score_valid, acc_valid = model.evalute(self.valid, self.valid_label, verbos = 2, batch_size = batch_size)
         
         model.save('rnn_model.h5')
         
 def main():
-    model = rnn(train = './Friends/friends_train.json', valid = './Friends/friends_dev.json', test = './Friends/friends_test.json', 'all')
-    model.get_features()
+    model = rnn(train = './Friends/friends_train.json', valid = './Friends/friends_dev.json', test = './Friends/friends_test.json', _type = 'all')
+    model.rnn_model()
 if __name__ == '__main__':
     main()
