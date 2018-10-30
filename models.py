@@ -59,21 +59,24 @@ class setiment_analysis():
         print(clf.best_params_)
 
     def gbdt(self):
-        clf = GradientBoostingClassifier()
-        #tuned_parameters = [ {'n_estimators': [10, 20, 30, 40, 50, 60, 70, 80, 90], 'learning_rate': [0.001, 0.005, 0.01, 0.05, 0.1, 0.5]} ]
-        #clf = GridSearchCV(GradientBoostingClassifier(), tuned_parameters, scoring = 'accuracy', cv=2)
+        #clf = GradientBoostingClassifier()
+        tuned_parameters = [ {'n_estimators': [10, 20, 30, 40, 50, 60, 70, 80, 90], 'learning_rate': [0.001, 0.005, 0.01, 0.05, 0.1, 0.5]} ]
+        clf = GridSearchCV(GradientBoostingClassifier(), tuned_parameters, scoring = 'accuracy', cv=2)
         clf.fit(self.training, self.label)
-        #print("Best parameters set found on development set:")
-        #print()
-        #print(clf.best_params_)
+        print("Best parameters set found on development set:")
+        print()
+        print(clf.best_params_)
 
 def main():
     start_time = time.time()
     model = setiment_analysis('./Friends/friends_train.json', 'all')
-    model.svm()
+    #print ('svm')
+    #model.svm()
     #model.rf()
+    #print ('adaboost')
     #model.adaboost()
-    #model.gbdt()
+    print ('gbdt')
+    model.gbdt()
     print (time.time() - start_time)
 
 
