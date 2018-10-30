@@ -122,6 +122,7 @@ def feature_transformation_sep(preprocessing_data, method = 'tfidf'):
         vectorizer = TfidfVectorizer()
         X = vectorizer.fit_transform(sentences)
         X = X.toarray()
+        pickle.dump(vectorizer, open('./data/tfidf_%s.pkl'%emotion, 'wb'))
         features[emotion] = X
         features[emotion+'_label'] = labels
         
@@ -132,9 +133,10 @@ def feature_transformation_sep(preprocessing_data, method = 'tfidf'):
     vectorizer_start = TfidfVectorizer()
     X_start = vectorizer_start.fit_transform(sentences_start)
     X_start = X_start.toarray()
-    features['start'] = X
-    features['label_start'] = labels_start
-    pickle.dump( features, open('./tfidf_sep.pkl', 'wb'))
+    pickle.dump(vectorizer, open('./data/tfidf_start.pkl', 'wb'))
+    features['start'] = X_start
+    features['start_label'] = labels_start
+    pickle.dump(features, open('./data/tfidf_sep.pkl', 'wb'))
     
 def feature_transformation_topic(preprocessing_data, method = 'lsa', topic = 100):
     sentences = [x[0] for x in preprocessing_data]
@@ -164,15 +166,6 @@ def feature_transformation_topic(preprocessing_data, method = 'lsa', topic = 100
             feature = [x[1] for x in lda_feature]
             features.append(feature)
         return features, labels
-#LSI mapping
-#new_doc = "Human computer interaction"
-#vec_bow = dictionary.doc2bow(doc.lower().split())
-#vec_lsi = lsi[vec_bow] 
-
-#LDA mapping
-#other_corpus = [common_dictionary.doc2bow(text) for text in other_texts]
-#unseen_doc = other_corpus[0]
-#vector = lda[unseen_doc]
 
 def feature_transformation_sep_topic(preprocessing_data, method = 'lsa', topic = 100):
     target_labels = ['joy', 'sadness', 'anger', 'neutral']
@@ -182,61 +175,74 @@ def feature_transformation_sep_topic(preprocessing_data, method = 'lsa', topic =
         sentences = [x[0] for x in data]
         sentences = [x.split(' ') for x in sentences]
         labels = [x[1] for x in data]
-        data_start = preprocessing_data[emotion+'_uttre_start']
-        sentences_start = [x[0] for x in data_start]
-        sentences_start = [x.split(' ') for x in sentences_start]
-        labels_start = [x[1] for x in data_start]
         dictionary = corpora.Dictionary(sentences)
+        dictionary.save('./data/dict_sep_%s.pkl' % emotion)
         corpus = [dictionary.doc2bow(text) for text in sentences]
-        dictionary_start = corpora.Dictionary(sentences_start)
-        corpus_start = [dictionary.doc2bow(text) for text in sentences_start]
+        corpora.MmCorpus.serialize( './data/corpus_sep_%s.pkl' % emotion ,corpus)
         if method == 'lsa':
             tfidf = models.TfidfModel(corpus)
             corpus_tfidf = tfidf[corpus]
             lsi = models.LsiModel(corpus_tfidf, id2word = dictionary, num_topics=topic)
+            lsi.save('./data/lsi_sep_%s.pkl' % emotion)
             corpus_lsi = lsi[corpus_tfidf]
             features = list()
             for doc in corpus_lsi:
-                features.append( [x[1] for x in doc] )
-            tfidf_start = models.TfidfModel(corpus_start)
-            corpus_tfidf_start = tfidf_start[corpus_start]
-            lsi_start = models.LsiModel(corpus_tfidf_start, num_topics=topic)
-            corpus_lsi_start = lsi_start[corpus_tfidf_start]
-            features_start = list()
-            for doc in corpus_lsi_start:
-                features_start.append( [x[1] for x in doc] )        
+                features.append( [x[1] for x in doc] )    
             topic_features[emotion] = features
-            topic_features[emotion+'_label'] = labels
-            topic_features[emotion+'_start'] = features_start
-            topic_features[emotion+'_label_start'] = labels_start
-            
+            topic_features[emotion+'_label'] = labels            
         elif method == 'lda':
             lda = models.ldamodel.LdaModel(corpus, num_topics = topic)
             lda_features = [lda.get_document_topics(cor, minimum_probability=0.0) for cor in corpus]
+            lda.save('./data/lda_sep_%s.pkl' % emotion)
             features = list()
             for lda_feature in lda_features:
                 feature = [x[1] for x in lda_feature]
                 features.append(feature)
-            lda_start = models.ldamodel.LdaModel(corpus_start, num_topics = topic)
-            lda_features_start = [lda.get_document_topics(cor, minimum_probability=0.0) for cor in corpus_start]
-            features_start = list()
-            for lda_feature in lda_features_start:
-                feature = [x[1] for x in lda_feature]
-                features_start.append(feature)
             topic_features[emotion] = features
             topic_features[emotion+'_label'] = labels
-            topic_features[emotion+'_start'] = features_start
-            topic_features[emotion+'_label'] = labels_start
+    data_start = [ x for emotion in target_labels for x in preprocessing_data[emotion+'_uttre_start'] ]
+    sentences_start = [x[0] for x in data_start]
+    sentences_start = [x.split(' ') for x in sentences_start]
+    labels_start = [x[1] for x in data_start]
+    dictionary_start = corpora.Dictionary(sentences_start)
+    dictionary_start.save('./data/dict_start.pkl')    
+    corpus_start = [dictionary.doc2bow(text) for text in sentences_start]
+    corpora.MmCorpus.serialize( './data/corpus_start.pkl' ,corpus_start)     
+    if method == 'lsa':
+        tfidf_start = models.TfidfModel(corpus_start)
+        corpus_tfidf_start = tfidf[corpus_start]
+        lsi_start = models.LsiModel(corpus_tfidf_start, num_topics=topic)
+        lsi_start.save('./data/lsi_start.pkl')
+        corpus_lsi_start = lsi[corpus_tfidf_start]
+        features_start = list()
+        for doc in corpus_lsi_start:
+            features_start.append( [x[1] for x in doc] )
+        topic_features['start'] = features_start
+        topic_features['start_label'] = labels_start
+    elif method == 'lda':
+        lda_start = models.ldamodel.LdaModel(corpus_start, num_topics = topic)
+        lda_start.save('./data/lda_start.pkl')
+        lda_features_start = [lda_start.get_document_topics(cor, minimum_probability=0.0) for cor in corpus_start]
+        features_start = list()
+        for lda_feature in lda_features_start:
+            feature = [x[1] for x in lda_feature]
+            features_start.append(feature)
+        topic_features['start'] = features_start
+        topic_features['start_label'] = labels_start
+    pickle.dump(topic_features, open('./data/sep_%s_%s.pkl' % (method, topic), 'wb'))
+
+
 
 def feature_transformation_word2vec(preprocessing_data, dim=100):
-    sentences = [x[0] for x in preprocessing_data]
-    
+    sentences = [x[0] for x in preprocessing_data]    
     word2vec_sentences = [x.split(' ') for x in sentences]
     labels = [x[1] for x in preprocessing_data]
     word2vec = models.word2vec.Word2Vec(word2vec_sentences, size=dim, min_count=1)
+    word2vec.save('./data/word2vec.pkl')
     vectorizer = TfidfVectorizer()
     matrix = vectorizer.fit_transform(sentences)
     tfidf = dict(zip(vectorizer.get_feature_names(), vectorizer.idf_))
+    pickle.dump(tfidf, open('./data/tfidf_word2vec.pkl', 'wb'))
     features = list()
     for sentence in word2vec_sentences:
         count = 0
@@ -253,8 +259,64 @@ def feature_transformation_word2vec(preprocessing_data, dim=100):
     features = np.nan_to_num(features).tolist()
     return features, labels
             
-        
-    
+def feature_transformation_sep_word2vec(preprocessing_data, dim=100):    
+    target_labels = ['joy', 'sadness', 'anger', 'neutral']
+    w2v_features = dict()
+    for emotion in target_labels:
+        data = preprocessing_data[emotion+'_uttre']
+        sentences = [x[0] for x in data]
+        word2vec_sentences = [x.split(' ') for x in sentences]
+        labels = [x[1] for x in data]
+        word2vec = models.word2vec.Word2Vec(word2vec_sentences, size=dim, min_count=1)
+        word2vec.save('./data/word2vec_%s.pkl' % emotion)
+        vectorizer = TfidfVectorizer()
+        matrix = vectorizer.fit_transform(sentences)
+        tfidf = dict(zip(vectorizer.get_feature_names(), vectorizer.idf_))
+        pickle.dump(tfidf, open('./data/tfidf_word2vec_%s.pkl' % emotion, 'wb'))
+        features = list()
+        for sentence in word2vec_sentences:
+            count = 0
+            a = np.array([ 0 for x in range(dim)])
+            for word in sentence:
+                try:
+                    word_vec = np.array(word2vec[word])
+                    tfidf_value = tfidf[word]
+                    count += 1
+                    a = a + (word_vec * tfidf_value)
+                except:
+                    pass
+            features.append(a/count)
+        features = np.nan_to_num(features).tolist()
+        w2v_features[emotion] = features
+        w2v_features[emotion+'_label'] = labels
+
+    data_start = [ x for emotion in target_labels for x in preprocessing_data[emotion+'_uttre_start'] ]
+    sentences_start = [x[0] for x in data_start]    
+    word2vec_sentences_start = [x.split(' ') for x in sentences_start]
+    labels_start = [x[1] for x in data_start]
+    word2vec_start = models.word2vec.Word2Vec(word2vec_sentences_start, size=dim, min_count=1)
+    word2vec_start.save('./data/word2vec_start.pkl')
+    vectorizer = TfidfVectorizer()
+    matrix = vectorizer.fit_transform(sentences)
+    tfidf = dict(zip(vectorizer.get_feature_names(), vectorizer.idf_))
+    pickle.dump(tfidf, open('./data/tfidf_word2vec_start.pkl', 'wb'))
+    features = list()
+    for sentence in word2vec_sentences_start:
+        count = 0
+        a = np.array([ 0 for x in range(dim)])
+        for word in sentence:
+            try:
+                word_vec = np.array(word2vec_start[word])
+                tfidf_value = tfidf[word]
+                count += 1
+                a = a + (word_vec * tfidf_value)
+            except:
+                pass
+        features.append(a/count)
+    features = np.nan_to_num(features).tolist()
+    w2v_features['start'] = features
+    w2v_features['start_label'] = labels_start
+    pickle.dump(w2v_features, open('./data/word2vec_sep.pkl', 'wb'))
 
 
     
