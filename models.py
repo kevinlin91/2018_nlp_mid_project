@@ -14,7 +14,7 @@ class setiment_analysis():
         self.method = method
         self.topic = topic
         self.training, self.label, self.label_mapping = self.get_data()
-        
+
 
     def get_data(self):
         if self.data_type == 'all':
@@ -51,7 +51,7 @@ class setiment_analysis():
 
     def rf(self):
         #clf = RandomForestClassifier(n_estimators= 101)
-        tuned_parameters = [ {'n_estimators': [11, 51, 101, 151, 201], 'max_features': ['auto', 'log2', 100, 200, 300, 400]} ]
+        tuned_parameters = [ {'n_estimators': [11, 51, 101, 151, 201], 'max_features': ['auto', 'log2']} ]
         clf = GridSearchCV(RandomForestClassifier(), tuned_parameters, scoring = 'accuracy', cv=2)
         clf.fit(self.training, self.label)
         print("Best parameters set found on development set:")
@@ -78,7 +78,7 @@ class setiment_analysis():
 
 def main():
     start_time = time.time()
-    model = setiment_analysis('./Friends/friends_train.json', 'all_topic', 'lda', 4)
+    model = setiment_analysis('./Friends/friends_train.json', 'all_topic', 'lsa', 100)
     print ('svm')
     model.svm()
     print ('random forest')
