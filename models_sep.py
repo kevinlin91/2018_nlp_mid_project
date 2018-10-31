@@ -397,13 +397,13 @@ class setiment_analysis_sep():
         print ('validing accuracy: ', valid_score_start, valid_score_joy, valid_score_sadness, valid_score_anger, valid_score_neutral)
 
 def main():
-    topics = [50, 100, 150, 200]
-    #topics = [4,5,6,7,8,9,10]
-    topics = [150]
+    #topics = [50, 100, 150, 200]
+    #topics = [4,5,6]
+    topics = [50, 100, 150]
     for x in topics:
         start_time = time.time()
-        model = setiment_analysis_sep(train = './Friends/friends_train.json', valid = './Friends/friends_dev.json', test = './Friends/friends_test.json',_type = 'sep_topic',method = 'lsa', topic = x)
-        #model = setiment_analysis_sep(train = './EmotionPush/emotionpush_train.json', valid = './EmotionPush/emotionpush_dev.json', test = './EmotionPush/emotionpush_test.json', _type = 'all_topic',method = 'lda', topic = x)
+        #model = setiment_analysis_sep(train = './Friends/friends_train.json', valid = './Friends/friends_dev.json', test = './Friends/friends_test.json',_type = 'sep_topic',method = 'lsa', topic = x)
+        model = setiment_analysis_sep(train = './EmotionPush/emotionpush_train.json', valid = './EmotionPush/emotionpush_dev.json', test = './EmotionPush/emotionpush_test.json', _type = 'sep_word2vec',method = 'lsa', topic = x)
         #print (model.train_joy[0], model.test_joy_label[0])
         #print (model.test_joy[0], model.test_joy_label[0])
         #print (len(model.train_joy), len(model.train_joy_label), len(model.test_joy), len(model.test_joy_label), len(model.valid_joy), len(model.valid_joy_label), len(model.train_start), len(model.train_start_label))

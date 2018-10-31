@@ -227,11 +227,13 @@ class setiment_analysis():
 def main(tuning = 0):
     start_time = time.time()
     topics = [4,5,6,7,8,9,10]
+    topics = [50,100]
     for x in topics:
         #model = setiment_analysis(train = './Friends/friends_train.json', valid = './Friends/friends_dev.json', test = './Friends/friends_test.json', _type = 'all_word2vec',method = 'lda', topic = x)
-        model = setiment_analysis(train = './EmotionPush/emotionpush_train.json', valid = './EmotionPush/emotionpush_dev.json', test = './EmotionPush/emotionpush_test.json', _type = 'all_topic',method = 'lda', topic = x)
+        model = setiment_analysis(train = './EmotionPush/emotionpush_train.json', valid = './EmotionPush/emotionpush_dev.json', test = './EmotionPush/emotionpush_test.json', _type = 'all_topic',method = 'lsa', topic = 50)
         #print (model.testing[0], model.test_label[0])
         #print (len(model.testing), len(model.test_label))
+        print (len(model.training[0]))
         if tuning == 1:
             print ('svm')
             model.svm_tuning()

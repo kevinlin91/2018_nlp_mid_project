@@ -44,7 +44,23 @@ def preprocessing_all(data):
         wordsFiltered = [wordnet_lemmatizer.lemmatize(w) for w in sentence_token if w not in stopWords]
         output.append( (' '.join(wordsFiltered), label) )
     return output
-
+def preprocessing_test(data):
+    #loading stopwords
+    stopWords = set(stopwords.words('english'))
+    #tokenize
+    words = [ (word_tokenize(sentence['utterance']), sentence['emotion']) for dialogue in data for sentence in dialogue ]
+    #stemming
+    wordnet_lemmatizer = WordNetLemmatizer()
+    porter_stemmer = PorterStemmer()
+    #processing
+    output = list()
+    stopWords = set(stopwords.words('english'))
+    for word in words:
+        sentence_token = word[0]
+        label = word[1]
+        wordsFiltered = [wordnet_lemmatizer.lemmatize(w) for w in sentence_token if w not in stopWords]
+        output.append( (' '.join(wordsFiltered), label) )
+    return output
 def preprocessing_sep(data):
     target_labels = ['joy', 'sadness', 'anger', 'neutral']
     joy_uttre = list()
@@ -155,7 +171,10 @@ def feature_transformation_topic(preprocessing_data, method = 'lsa', topic = 100
         corpus_lsi = lsi[corpus_tfidf]
         features = list()
         for doc in corpus_lsi:
-            features.append( [x[1] for x in doc] )
+            feature = [0 for x in range(topic)]
+            for x in doc:
+                feature[x[0]] = x[1]
+            features.append(feature)
         return features, labels
     elif method == 'lda':
         lda = models.ldamodel.LdaModel(corpus, num_topics = topic)
@@ -187,7 +206,10 @@ def feature_transformation_sep_topic(preprocessing_data, method = 'lsa', topic =
             corpus_lsi = lsi[corpus_tfidf]
             features = list()
             for doc in corpus_lsi:
-                features.append( [x[1] for x in doc] )    
+                feature = [0 for x in range(topic)]
+                for x in doc:
+                    feature[x[0]] = x[1]
+                features.append(feature)
             topic_features[emotion] = features
             topic_features[emotion+'_label'] = labels            
         elif method == 'lda':
