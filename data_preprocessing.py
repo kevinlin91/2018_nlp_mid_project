@@ -122,7 +122,7 @@ def feature_transformation_sep(preprocessing_data, method = 'tfidf'):
         vectorizer = TfidfVectorizer()
         X = vectorizer.fit_transform(sentences)
         X = X.toarray()
-        pickle.dump(vectorizer, open('./data/tfidf_%s.pkl'%emotion, 'wb'))
+        pickle.dump(vectorizer_start, open('./data/tfidf_%s.pkl'%emotion, 'wb'))
         features[emotion] = X
         features[emotion+'_label'] = labels
         

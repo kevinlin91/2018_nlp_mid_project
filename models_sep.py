@@ -101,6 +101,7 @@ class setiment_analysis_sep():
                         features.append([x[1] for x in vec_lsi])
                     topic_features[emotion] = features
                     topic_features[emotion + '_label'] = labels
+                    
                 elif self.method =='lda':
                     lda = models.ldamodel.LdaModel.load('./data/lda_sep_%s.pkl' % emotion)
                     features = list()
@@ -310,7 +311,7 @@ class setiment_analysis_sep():
                 clf_sadness = AdaBoostClassifier(learning_rate = 0.5, n_estimators = 80)
                 clf_anger = AdaBoostClassifier(learning_rate = 0.5, n_estimators = 80)
                 clf_neutral = AdaBoostClassifier(learning_rate = 0.5, n_estimators = 80)
-            elif self.method == 'sep':
+            elif self.method == 'lda':
                 clf_start = AdaBoostClassifier(learning_rate = 0.5, n_estimators = 70)
                 clf_joy = AdaBoostClassifier(learning_rate = 0.5, n_estimators = 70)
                 clf_sadness = AdaBoostClassifier(learning_rate = 0.5, n_estimators = 70)
@@ -397,16 +398,17 @@ class setiment_analysis_sep():
 
 def main():
     topics = [50, 100, 150, 200]
-    topics = [4,5,6,7,8,9,10]
+    #topics = [4,5,6,7,8,9,10]
+    topics = [150]
     for x in topics:
         start_time = time.time()
-        model = setiment_analysis_sep(train = './Friends/friends_train.json', valid = './Friends/friends_dev.json', test = './Friends/friends_test.json',_type = 'sep_word2vec',method = 'lda', topic = x)
+        model = setiment_analysis_sep(train = './Friends/friends_train.json', valid = './Friends/friends_dev.json', test = './Friends/friends_test.json',_type = 'sep_topic',method = 'lsa', topic = x)
         #model = setiment_analysis_sep(train = './EmotionPush/emotionpush_train.json', valid = './EmotionPush/emotionpush_dev.json', test = './EmotionPush/emotionpush_test.json', _type = 'all_topic',method = 'lda', topic = x)
         #print (model.train_joy[0], model.test_joy_label[0])
         #print (model.test_joy[0], model.test_joy_label[0])
         #print (len(model.train_joy), len(model.train_joy_label), len(model.test_joy), len(model.test_joy_label), len(model.valid_joy), len(model.valid_joy_label), len(model.train_start), len(model.train_start_label))
         #print ( len(model.train_start), len(model.train_start_label), len(model.test_start), len(model.test_start_label), len(model.valid_start), len(model.valid_start_label) )
-                        
+        #print(np.array(model.train_sadness).shape) 
         model.svm()
         model.rf()
         model.adaboost()
